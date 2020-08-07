@@ -1,25 +1,20 @@
-## Pegasus 5.0 Development Environment
+# Pegasus Development Environment
 
-Use this environment to play around with the 5.0 python api, develop and run
-small workflows from a jupyter notebook or jupyter terminal. Nested docker 
+Use this environment to get a feel for the Pegasus 5.0 Python API, develop, and run
+small workflows from a jupyter notebook or terminal. Nested docker 
 containers are supported.
 
-### Usage
-1. `git clone https://github.com/ryantanaka/pegasus5.0-dev-env.git`
-2. `./build.sh`
-    - This will build the image from scratch and will take 10 minutes or so. 
-    Subsequent calls to this always build the latest Pegasus master. All previous
-    layers are reused and only Pegasus will be rebuilt. 
-3. `./run.sh`
-    - `./shared-data` will be bind mounted in the container to `/home/scitech/shared-data`
-    - `jupyter notebook` will be running on `localhost:8888`
-4. Go to `localhost:8888` and enter `scitech` as the password. 
+*Latest version of Docker is required.*
 
-For example, the output will look something like:
+## Usage
+1. `git clone https://github.com/pegasus-isi/pegasus-workflow-development-environment.git`
+2. `cd pegasus-workflow-development-environment`
+3. `sudo chown :808 ./shared-data && chmod 775 ./shared-data && chmod g+s ./shared-data`
+4. `docker pull ryantanaka/pegasus-wf-dev-env`
+5. `docker container run -p 8888:8888 --privileged --mount type=bind,source="$(pwd)"/shared-data,target=/home/scitech/shared-data ryantanaka/pegasus-wf-dev-env`
+6. In a browser window, go to `localhost:8888`, and enter `scitech` as the password.
 
-5. Once you've created a new jupyter notebook, create a block with `from Pegasus.api import *`,
-    and run that block. At this point, the notebook will be set up with intellisense for the 5.0 python api. 
-    Use `<TAB>` for code completion and `<SHIFT> + <TAB>` to bring up a function definition/docstring. 
+At this point you can develop workflows using Jupyter notebooks, the Jupyter terminal,
+or from an IDE assuming the workflow file is in the `shared-data` directory
+which is mounted into the container. 
 
-You can also use the terminal provided by jupyter to directly interact with
-the container. As such, you can run workflows from there as well. 
