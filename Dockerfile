@@ -92,9 +92,10 @@ RUN mkdir /home/scitech/.pegasus \
     && chmod u+x /home/scitech/.pegasus/service.py
 
 # Get Pegasus 
+# ver. is master from Aug 31
 RUN git clone https://github.com/pegasus-isi/pegasus.git \
     && cd pegasus \
-    && git checkout 820879c61 -b beta1 \
+    && git checkout f9b9f63a42cc -b beta1 \
     && ant dist \
     && cd dist \
     && mv $(find . -type d -name "pegasus-*") pegasus
@@ -113,6 +114,50 @@ RUN echo -e "export PYTHONPATH=/home/scitech/pegasus/dist/pegasus/lib64/python3.
 # Set notebook password to 'scitech'. This pw will be used instead of token authentication
 RUN mkdir /home/scitech/.jupyter \ 
     && echo "{ \"NotebookApp\": { \"password\": \"sha1:30a323540baa:6eec8eaf3b4e0f44f2f2aa7b504f80d5bf0ad745\" } }" >> /home/scitech/.jupyter/jupyter_notebook_config.json
+
+# ------------------------------
+# GeoEDF specific section begins
+# ------------------------------
+
+USER root
+
+# Install hpccm 
+# used to convert high-level container recipes into Singularity recipes
+
+RUN pip3 install hpccm
+
+# Install GeoEDF workflow engine
+
+RUN cd /tmp && \
+    git clone https://github.com/geoedf/engine.git && \
+    cd engine && \
+    git checkout pegasus-5.0 && \
+    pip3 install . && \
+    rm -rf /tmp/engine
+
+# create folders to store job data and local Singularity images
+
+RUN mkdir /data && \
+    chown scitech: /data && \
+    chmod 777 /data && \
+    mkdir /images && \
+    chown scitech: /images && \
+    chmod 755 /images
+
+# create remote registry configuration for Singularity 
+
+RUN mkdir /home/scitech/.singularity 
+
+ADD ./config/remote.yaml /home/scitech/.singularity/
+
+RUN chown -R scitech: /home/scitech/.singularity && \
+    chmod 600 /home/scitech/.singularity/remote.yaml
+
+USER scitech
+
+# ------------------------------
+# GeoEDF specific section ends
+# ------------------------------
 
 # wrapdocker required for nested docker containers
 ENTRYPOINT ["sudo", "/usr/local/bin/wrapdocker"]
